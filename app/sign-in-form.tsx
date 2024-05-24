@@ -15,24 +15,106 @@ import {
   GoogleButton,
 } from "@/components/atom/SolcialButtons";
 import { router } from "expo-router";
-const SignInForm = () => {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(true);
 
+//forms
+import { Formik } from "formik";
+import * as yup from "yup";
+
+const SignInForm = () => {
   return (
     <View style={styles.container}>
       <View style={styles.containerForm}>
+        <LoginForm />
+      </View>
+    </View>
+  );
+};
+
+export const LoginForm = () => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(true);
+  const loginValidationSchema = yup.object().shape({
+    email: yup
+      .string()
+      .email("El correo es inválido")
+      .required("El correo es requerido"),
+    password: yup.string().required("La contraseña es requerida"),
+  });
+
+  return (
+    <Formik
+      validationSchema={loginValidationSchema}
+      initialValues={{ email: "", password: "" }}
+      onSubmit={async (values) => {
+        const myHeaders = new Headers();
+        const raw = JSON.stringify({
+          email: "acharmelo99@gmail.com",
+          password: "admin1234",
+        });
+        myHeaders.append("Content-Type", "application/json");
+        const requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+        };
+        const url = `${process.env.EXPO_PUBLIC_SERVER_URL}/auth/login`;
+        console.log(url);
+        fetch(url, {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+        })
+          .then((response) => response.text())
+          .then((result) => console.log(result))
+          .catch((error) => console.error(error));
+        // const res = await fetch(url, {
+        //   method: "POST",
+        //   body: JSON.stringify({
+        //     email: "acharmelo99@gmail.com",
+        //     password: "admin1234",
+        //   }),
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        // });
+        // const data = await res.json();
+        // console.log(data);
+      }}>
+      {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
         <View style={styles.form}>
           <View style={styles.field}>
             <Text style={styles.label}>Correo electrónico</Text>
-            <View style={styles.borderStyle}>
-              <TextInput placeholder="Email" style={styles.input} />
+            <View
+              style={[
+                styles.borderStyle,
+                { borderColor: errors.email ? "#E53935" : "#9CA4AB" },
+              ]}>
+              <TextInput
+                onChangeText={handleChange("email")}
+                onBlur={handleBlur("email")}
+                value={values.email}
+                keyboardType="email-address"
+                style={styles.input}
+              />
             </View>
+            {errors.email && (
+              <Text
+                style={{ color: "#E53935", fontSize: 12, fontWeight: "bold" }}>
+                {errors.email}
+              </Text>
+            )}
           </View>
           <View style={styles.field}>
             <Text style={styles.label}>Contraseaña</Text>
-            <View style={styles.borderStyle}>
+            <View
+              style={[
+                styles.borderStyle,
+                { borderColor: errors.password ? "#E53935" : "#9CA4AB" },
+              ]}>
               <TextInput
                 placeholder=""
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
                 secureTextEntry={isPasswordVisible}
                 style={styles.input}
               />
@@ -46,12 +128,18 @@ const SignInForm = () => {
                 )}
               </TouchableOpacity>
             </View>
+            {errors.password && (
+              <Text
+                style={{ color: "#E53935", fontSize: 12, fontWeight: "bold" }}>
+                {errors.password}
+              </Text>
+            )}
             <Text
               style={{ color: "#F87146", fontSize: 14, fontWeight: "bold" }}>
               ¿Olvidaste tu contraseña?
             </Text>
           </View>
-          <SecondaryButton text="Inciar Sesión" />
+          <SecondaryButton callback={handleSubmit} text="Inciar Sesión" />
           <Divisor />
           <View style={styles.socialButtons}>
             <View style={{ width: "100%" }}>
@@ -84,12 +172,10 @@ const SignInForm = () => {
             </View>
           </View>
         </View>
-      </View>
-    </View>
+      )}
+    </Formik>
   );
 };
-
-export default SignInForm;
 
 const styles = StyleSheet.create({
   container: {
@@ -123,6 +209,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
   input: {
     height: 48,
     flex: 1,
@@ -136,3 +223,4 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 });
+export default SignInForm;

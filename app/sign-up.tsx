@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react-native";
-import Button, { SecondaryButton } from "@/components/atom/Button";
+import Button from "@/components/atom/Button";
 import Divisor from "@/components/atom/Divisor";
 import {
   AppleButton,
@@ -16,10 +16,26 @@ import {
   GoogleButton,
 } from "@/components/atom/SolcialButtons";
 import { router } from "expo-router";
+//forms
+import { Formik } from "formik";
+import * as yup from "yup";
 const SignUp = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(true);
-
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  const registerValidationSchema = yup.object().shape({
+    email: yup
+      .string()
+      .email("El correo es inválido")
+      .required("El correo es requerido"),
+    phoneNumber: yup.string().required("El teléfono es requerido"),
+    name: yup.string().required("El nombre es requerido"),
+    password: yup.string().required("La contraseña es requerida"),
+    confirmPassword: yup
+      .string()
+      .required("La confirmación de contraseña es requerida")
+      .oneOf([yup.ref("password")], "Las contraseñas no coinciden"),
+  });
 
   const formatPhoneNumber = (text: string) => {
     let formattedText = text.replace(/\D/g, "");
@@ -41,119 +57,231 @@ const SignUp = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.containerForm}>
-        <View style={styles.form}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre completo</Text>
-            <View style={styles.borderStyle}>
-              <TextInput
-                placeholder="Escribe tu nombre completo aquí"
-                style={styles.input}
-              />
-            </View>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View style={styles.borderStyle}>
-              <TextInput
-                placeholder="Escribe tu Correo electrónico aquí"
-                style={styles.input}
-              />
-            </View>
-          </View>
-          {/* telefono */}
-          <View style={styles.field}>
-            <Text style={styles.label}>Teléfono</Text>
-            <View style={styles.borderStyle}>
-              <TextInput
-                placeholder="000-00-00-00"
-                style={styles.input}
-                value={phoneNumber}
-                onChangeText={formatPhoneNumber}
-                keyboardType="number-pad"
-                maxLength={12}
-              />
-            </View>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Contraseaña</Text>
-            <View style={styles.borderStyle}>
-              <TextInput
-                placeholder=""
-                secureTextEntry={isPasswordVisible}
-                style={styles.input}
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setIsPasswordVisible((prevState) => !prevState)}>
-                {isPasswordVisible ? (
-                  <Eye color={"#332C45"} size={24} />
-                ) : (
-                  <EyeOff color={"#332C45"} size={24} />
+        <Formik
+          validationSchema={registerValidationSchema}
+          initialValues={{
+            email: "",
+            password: "",
+            phoneNumber: "",
+            name: "",
+            confirmPassword: "",
+          }}
+          onSubmit={(values) => console.log(values)}>
+          {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+            <View style={styles.form}>
+              <View style={styles.field}>
+                <Text style={styles.label}>Nombre completo</Text>
+                <View
+                  style={[
+                    styles.borderStyle,
+                    { borderColor: errors.name ? "#E53935" : "#9CA4AB" },
+                  ]}>
+                  <TextInput
+                    placeholder="Escribe tu nombre completo aquí"
+                    style={styles.input}
+                    onChangeText={handleChange("name")}
+                    onBlur={handleBlur("name")}
+                  />
+                </View>
+                {errors.name && (
+                  <Text
+                    style={{
+                      color: "#E53935",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                    {errors.name}
+                  </Text>
                 )}
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Confirmar contraseaña</Text>
-            <View style={styles.borderStyle}>
-              <TextInput
-                placeholder=""
-                secureTextEntry={isPasswordVisible}
-                style={styles.input}
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setIsPasswordVisible((prevState) => !prevState)}>
-                {isPasswordVisible ? (
-                  <Eye color={"#332C45"} size={24} />
-                ) : (
-                  <EyeOff color={"#332C45"} size={24} />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Correo electrónico</Text>
+                <View
+                  style={[
+                    styles.borderStyle,
+                    { borderColor: errors.email ? "#E53935" : "#9CA4AB" },
+                  ]}>
+                  <TextInput
+                    placeholder="Escribe tu Correo electrónico aquí"
+                    style={styles.input}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    keyboardType="email-address"
+                  />
+                </View>
+                {errors.email && (
+                  <Text
+                    style={{
+                      color: "#E53935",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                    {errors.email}
+                  </Text>
                 )}
-              </TouchableOpacity>
-            </View>
-            <Text
-              style={{ color: "#78828A", fontSize: 14, fontWeight: "bold" }}>
-              Al hacer clic en Registrarse, aceptas los{" "}
-              <Text
-                style={{ color: "#F87146", fontSize: 14, fontWeight: "bold" }}>
-                Términos y políticas{" "}
-              </Text>
-              del sistema.
-            </Text>
-          </View>
-          <Button text="Registrarse" />
-          <Divisor />
-          <View style={styles.socialButtons}>
-            <View style={{ width: "100%" }}>
-              <GoogleButton />
-            </View>
-            <View style={{ width: "100%" }}>
-              <FacebookButton />
-            </View>
-            <View style={{ width: "100%" }}>
-              <AppleButton />
-            </View>
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}>
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginVertical: 10,
-                }}>
-                No tienes cuenta?{" "}
+              </View>
+              {/* telefono */}
+              <View style={styles.field}>
+                <Text style={styles.label}>Teléfono</Text>
+                <View
+                  style={[
+                    styles.borderStyle,
+                    { borderColor: errors.phoneNumber ? "#E53935" : "#9CA4AB" },
+                  ]}>
+                  <TextInput
+                    placeholder="000-00-00-00"
+                    style={styles.input}
+                    value={phoneNumber}
+                    onChangeText={(text) => {
+                      formatPhoneNumber(text);
+                      handleChange("phoneNumber")(text);
+                    }}
+                    onBlur={handleBlur("phoneNumber")}
+                    keyboardType="number-pad"
+                    maxLength={12}
+                  />
+                </View>
+                {errors.phoneNumber && (
+                  <Text
+                    style={{
+                      color: "#E53935",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                    {errors.phoneNumber}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Contraseaña</Text>
+                <View
+                  style={[
+                    styles.borderStyle,
+                    { borderColor: errors.password ? "#E53935" : "#9CA4AB" },
+                  ]}>
+                  <TextInput
+                    placeholder=""
+                    secureTextEntry={isPasswordVisible}
+                    style={styles.input}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() =>
+                      setIsPasswordVisible((prevState) => !prevState)
+                    }>
+                    {isPasswordVisible ? (
+                      <Eye color={"#332C45"} size={24} />
+                    ) : (
+                      <EyeOff color={"#332C45"} size={24} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {errors.password && (
+                  <Text
+                    style={{
+                      color: "#E53935",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                    {errors.password}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Confirmar contraseaña</Text>
+                <View
+                  style={[
+                    styles.borderStyle,
+                    {
+                      borderColor: errors.confirmPassword
+                        ? "#E53935"
+                        : "#9CA4AB",
+                    },
+                  ]}>
+                  <TextInput
+                    placeholder=""
+                    secureTextEntry={isPasswordVisible}
+                    style={styles.input}
+                    onChangeText={handleChange("confirmPassword")}
+                    onBlur={handleBlur("confirmPassword")}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() =>
+                      setIsPasswordVisible((prevState) => !prevState)
+                    }>
+                    {isPasswordVisible ? (
+                      <Eye color={"#332C45"} size={24} />
+                    ) : (
+                      <EyeOff color={"#332C45"} size={24} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {errors.confirmPassword && (
+                  <Text
+                    style={{
+                      color: "#E53935",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                    {errors.confirmPassword}
+                  </Text>
+                )}
                 <Text
-                  style={{ color: "#F87146" }}
-                  onPress={() => router.push("sign-up")}>
-                  Registrate
+                  style={{
+                    color: "#78828A",
+                    fontSize: 14,
+                    fontWeight: "bold",
+                  }}>
+                  Al hacer clic en Registrarse, aceptas los{" "}
+                  <Text
+                    style={{
+                      color: "#F87146",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                    }}>
+                    Términos y políticas{" "}
+                  </Text>
+                  del sistema.
                 </Text>
-              </Text>
+              </View>
+              <Button text="Registrarse" callback={handleSubmit} />
+              <Divisor />
+              <View style={styles.socialButtons}>
+                <View style={{ width: "100%" }}>
+                  <GoogleButton />
+                </View>
+                <View style={{ width: "100%" }}>
+                  <FacebookButton />
+                </View>
+                <View style={{ width: "100%" }}>
+                  <AppleButton />
+                </View>
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}>
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      marginVertical: 10,
+                    }}>
+                    No tienes cuenta?{" "}
+                    <Text
+                      style={{ color: "#F87146" }}
+                      onPress={() => router.push("sign-up")}>
+                      Registrate
+                    </Text>
+                  </Text>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
+          )}
+        </Formik>
       </View>
     </ScrollView>
   );

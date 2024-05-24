@@ -12,6 +12,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { SessionProvider } from "@/ctx";
 import { Image } from "react-native";
+import { SWRConfig } from "swr";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,33 +36,35 @@ export default function RootLayout() {
   return (
     // <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
     <SessionProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="sign-in-form"
-          options={{
-            headerShown: true,
-            title: "Iniciar Sesión",
-            headerTitleAlign: "center",
-            headerTitleStyle: {
-              fontWeight: "bold",
-            },
-          }}
-        />
-        <Stack.Screen
-          name="sign-up"
-          options={{
-            headerShown: true,
-            title: "Registrarse",
-            headerTitleAlign: "center",
-            headerTitleStyle: {
-              fontWeight: "bold",
-            },
-          }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <SWRConfig>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="sign-in-form"
+            options={{
+              headerShown: true,
+              title: "Iniciar Sesión",
+              headerTitleAlign: "center",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="sign-up"
+            options={{
+              headerShown: true,
+              title: "Registrarse",
+              headerTitleAlign: "center",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </SWRConfig>
     </SessionProvider>
     // </ThemeProvider>
   );
