@@ -2,10 +2,11 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react-native";
 import { SecondaryButton } from "@/components/atom/Button";
 import Divisor from "@/components/atom/Divisor";
@@ -19,7 +20,7 @@ import { router } from "expo-router";
 //forms
 import { Formik } from "formik";
 import * as yup from "yup";
-
+import { useSession } from "@/ctx";
 const SignInForm = () => {
   return (
     <View style={styles.container}>
@@ -31,6 +32,8 @@ const SignInForm = () => {
 };
 
 export const LoginForm = () => {
+  const { signIn, session } = useSession();
+  const [loading, setLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(true);
   const loginValidationSchema = yup.object().shape({
     email: yup
@@ -45,10 +48,11 @@ export const LoginForm = () => {
       validationSchema={loginValidationSchema}
       initialValues={{ email: "", password: "" }}
       onSubmit={async (values) => {
+        setLoading(true);
         const myHeaders = new Headers();
         const raw = JSON.stringify({
-          email: "acharmelo99@gmail.com",
-          password: "admin1234",
+          email: values.email,
+          password: values.password,
         });
         myHeaders.append("Content-Type", "application/json");
         const requestOptions = {
@@ -63,21 +67,30 @@ export const LoginForm = () => {
           headers: myHeaders,
           body: raw,
         })
-          .then((response) => response.text())
-          .then((result) => console.log(result))
-          .catch((error) => console.error(error));
-        // const res = await fetch(url, {
-        //   method: "POST",
-        //   body: JSON.stringify({
-        //     email: "acharmelo99@gmail.com",
-        //     password: "admin1234",
-        //   }),
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        // });
-        // const data = await res.json();
-        // console.log(data);
+          .then((response) => response.json())
+          .then((result) => {
+            //if status == 401
+            if (result.statusCode == 401) {
+              ToastAndroid.showWithGravity(
+                "Correo o contraseña incorrectos",
+                ToastAndroid.LONG,
+                ToastAndroid.BOTTOM
+              );
+            } else {
+              setLoading(false);
+              signIn(result.access_token);
+              router.replace("/(app)");
+            }
+          })
+          .catch((error) => {
+            setLoading(false);
+
+            ToastAndroid.showWithGravity(
+              "Ha ocurrido un error, intente más tarde",
+              ToastAndroid.LONG,
+              ToastAndroid.BOTTOM
+            );
+          });
       }}>
       {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
         <View style={styles.form}>
@@ -139,7 +152,11 @@ export const LoginForm = () => {
               ¿Olvidaste tu contraseña?
             </Text>
           </View>
-          <SecondaryButton callback={handleSubmit} text="Inciar Sesión" />
+          <SecondaryButton
+            loading={loading}
+            callback={handleSubmit}
+            text="Iniciar Sesión"
+          />
           <Divisor />
           <View style={styles.socialButtons}>
             <View style={{ width: "100%" }}>

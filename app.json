@@ -36,7 +36,8 @@
         {
           "faceIDPermission": "Permitir a  $(PRODUCT_NAME) usar Face ID para iniciar sesión"
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,10 +1,15 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import React from "react";
-import {} from "react-native-gesture-handler";
 
 interface ButtonProps {
   callback?: () => void;
   text?: string;
+  loading?: boolean;
 }
 
 const Button = ({
@@ -12,10 +17,22 @@ const Button = ({
     console.log("press");
   },
   text = "Enviar",
+  loading = false,
 }: ButtonProps) => {
+  const handleCallback = () => {
+    if (!loading) {
+      callback();
+    }
+  };
+
   return (
-    <TouchableOpacity onPress={callback} style={styles.button}>
-      <Text style={{ color: "white", fontWeight: "bold" }}>{text}</Text>
+    <TouchableOpacity onPress={handleCallback} style={styles.button}>
+      {loading ? (
+        <ActivityIndicator size="small" color="white" />
+      ) : (
+        <Text style={{ color: "white", fontWeight: "bold" }}>{text}</Text>
+      )}
+      {/* <Text style={{ color: "white", fontWeight: "bold" }}>{text}</Text> */}
     </TouchableOpacity>
   );
 };
@@ -25,10 +42,20 @@ export const SecondaryButton = ({
     console.log("press");
   },
   text = "Enviar",
+  loading = false,
 }: ButtonProps) => {
+  const handleCallback = () => {
+    if (!loading) {
+      callback();
+    }
+  };
   return (
-    <TouchableOpacity onPress={callback} style={styles.secondaryButton}>
-      <Text style={{ color: "#434E58", fontWeight: "bold" }}>{text}</Text>
+    <TouchableOpacity onPress={handleCallback} style={styles.secondaryButton}>
+      {loading ? (
+        <ActivityIndicator size="small" color="black" />
+      ) : (
+        <Text style={{ color: "#434E58", fontWeight: "bold" }}>{text}</Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -45,6 +72,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   secondaryButton: {
     backgroundColor: "#E3E9ED",
@@ -55,5 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
   },
 });
